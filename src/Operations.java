@@ -21,20 +21,26 @@ public class Operations {
         if (L1hit) {
             if (trace.getOperation() == 'L') {
                 System.out.print("L1D hit, ");
+                Main.L1DhitCt++;
             } else {
                 System.out.print("L1I hit, ");
+                Main.L1IhitCt++;
             }
         } else {
             if (trace.getOperation() == 'L') {
                 System.out.print("L1D miss, ");
+                Main.L1DMissCt++;
             } else {
                 System.out.print("L1I miss, ");
+                Main.L1IMissCt++;
             }
         }
         if (L2hit) {
             System.out.println("L2 hit");
+            Main.L2hitCt++;
         } else {
             System.out.println("L2 miss");
+            Main.L2MissCt++;
         }
         if (!(L2hit || L1hit)) {
             System.out.print("Place in ");
@@ -50,6 +56,7 @@ public class Operations {
                     }
                 }
                 lines.remove(index);
+                Main.L2Eviction++;
             }
             addressIndex = Integer.parseInt(trace.getAddress(), 16);
             String data = calculation.memoryLoader(Main.ram, addressIndex, trace.getForwardByte(), (int) Math.pow(2, Main.L2B));
@@ -73,6 +80,11 @@ public class Operations {
                     }
                 }
                 lines.remove(index);
+                if (trace.getOperation() == 'L') {
+                    Main.L1DEviction++;
+                } else {
+                    Main.L1IEviction++;
+                }
             }
             addressIndex = Integer.parseInt(trace.getAddress(), 16);
             String data = calculation.memoryLoader(Main.ram, addressIndex, trace.getForwardByte(), (int) Math.pow(2, Main.L1B));
@@ -102,29 +114,32 @@ public class Operations {
         L1hit = calculation.cacheSearcher(L1D, setIndexL1, tagL1);
         L2hit = calculation.cacheSearcher(L2, setIndexL2, tagL2);
         System.out.println(trace.getOperation() + " " + trace.getAddress() + " " + trace.getForwardByte() + " " + trace.getData());
-        int addressIndex;
         if (L1hit) {
             System.out.print("L1D hit, ");
+            Main.L1DhitCt++;
         } else {
             System.out.print("L1D miss, ");
+            Main.L1DMissCt++;
         }
         if (L2hit) {
             System.out.println("L2 hit");
+            Main.L2hitCt++;
         } else {
             System.out.println("L2 miss");
+            Main.L2MissCt++;
         }
         System.out.print("Store in ");
         if (L1hit) {
             System.out.print("L1D, ");
             int index = calculation.cacheIndexSearch(L1D, setIndexL1, tagL1);
             int startIndex = Integer.parseInt(trace.getAddress(), 16) % (int) Math.pow(2, Main.L1B);
-            calculation.cacheChanger(L1D,setIndexL1,index,trace.getData(),startIndex,(startIndex+trace.getForwardByte()*2));
+            calculation.cacheChanger(L1D, setIndexL1, index, trace.getData(), startIndex, (startIndex + trace.getForwardByte() * 2));
         }
         if (L2hit) {
             System.out.print("L2, ");
             int index = calculation.cacheIndexSearch(L2, setIndexL2, tagL2);
-            int startIndex = Integer.parseInt(trace.getAddress(), 16) %  (int) Math.pow(2, Main.L2B);
-            calculation.cacheChanger(L2,setIndexL2,index,trace.getData(),startIndex,(startIndex+trace.getForwardByte()*2));
+            int startIndex = Integer.parseInt(trace.getAddress(), 16) % (int) Math.pow(2, Main.L2B);
+            calculation.cacheChanger(L2, setIndexL2, index, trace.getData(), startIndex, (startIndex + trace.getForwardByte() * 2));
         }
         calculation.memoryChanger(trace.getData(), Integer.parseInt(trace.getAddress(), 16), trace.getForwardByte());
         System.out.println("RAM");

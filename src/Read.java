@@ -11,7 +11,7 @@ public class Read {
         while (scan.hasNextLine()) {
             temp = scan.nextLine();
             String formatted = temp.replaceAll(",", "");
-            System.out.println(formatted);
+//            System.out.println(formatted);
             list.add(parser(formatted));
         }
         scan.close();
