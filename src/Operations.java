@@ -5,23 +5,31 @@ public class Operations {
         MemoryCalculation calculation = new MemoryCalculation();
         String addressBinary = calculation.hexToBinary(trace.getAddress());
 
-        String temp = addressBinary.substring(0, addressBinary.length() - Main.L1B);
-        int setIndexL1 = calculation.binaryToDecimal(temp.substring(temp.length() - Main.L1S));
-        String tagL1 = temp.substring(0, temp.length() - Main.L1S);
+        String temp = addressBinary.substring(0, addressBinary.length() - Main.L1B); // subtract block offset
+        int setIndexL1 = calculation.binaryToDecimal(temp.substring(temp.length() - Main.L1S)); // find set index
+        String tagL1 = temp.substring(0, temp.length() - Main.L1S); //find tag
 
         temp = addressBinary.substring(0, addressBinary.length() - Main.L2B);
         int setIndexL2 = calculation.binaryToDecimal(temp.substring(temp.length() - Main.L2S));
         String tagL2 = temp.substring(0, temp.length() - Main.L2S);
 
-        boolean L1hit, L2hit;
+        boolean L1hit, L2hit; //hit situation
         L1hit = calculation.cacheSearcher(L1D, setIndexL1, tagL1);
         L2hit = calculation.cacheSearcher(L2, setIndexL2, tagL2);
         System.out.println(trace.getOperation() + " " + trace.getAddress() + ", " + trace.getForwardByte());
         int addressIndex;
         if (L1hit) {
-            System.out.print("L1D hit, ");
+            if (trace.getOperation() == 'L') {
+                System.out.print("L1D hit, ");
+            } else {
+                System.out.print("L1I hit, ");
+            }
         } else {
-            System.out.print("L1D miss, ");
+            if (trace.getOperation() == 'L') {
+                System.out.print("L1D miss, ");
+            } else {
+                System.out.print("L1I miss, ");
+            }
         }
         if (L2hit) {
             System.out.println("L2 hit");
@@ -76,6 +84,49 @@ public class Operations {
                 System.out.println("L1D set " + setIndexL1);
             }
         }
+    }
 
+    void store(Traces trace, Cache L1D, Cache L2) {
+        MemoryCalculation calculation = new MemoryCalculation();
+        String addressBinary = calculation.hexToBinary(trace.getAddress());
+
+        String temp = addressBinary.substring(0, addressBinary.length() - Main.L1B);
+        int setIndexL1 = calculation.binaryToDecimal(temp.substring(temp.length() - Main.L1S));
+        String tagL1 = temp.substring(0, temp.length() - Main.L1S);
+
+        temp = addressBinary.substring(0, addressBinary.length() - Main.L2B);
+        int setIndexL2 = calculation.binaryToDecimal(temp.substring(temp.length() - Main.L2S));
+        String tagL2 = temp.substring(0, temp.length() - Main.L2S);
+
+        boolean L1hit, L2hit;
+        L1hit = calculation.cacheSearcher(L1D, setIndexL1, tagL1);
+        L2hit = calculation.cacheSearcher(L2, setIndexL2, tagL2);
+        System.out.println(trace.getOperation() + " " + trace.getAddress() + " " + trace.getForwardByte() + " " + trace.getData());
+        int addressIndex;
+        if (L1hit) {
+            System.out.print("L1D hit, ");
+        } else {
+            System.out.print("L1D miss, ");
+        }
+        if (L2hit) {
+            System.out.println("L2 hit");
+        } else {
+            System.out.println("L2 miss");
+        }
+        System.out.print("Store in ");
+        if (L1hit) {
+            System.out.print("L1D, ");
+            int index = calculation.cacheIndexSearch(L1D, setIndexL1, tagL1);
+            int startIndex = Integer.parseInt(trace.getAddress(), 16) % (int) Math.pow(2, Main.L1B);
+            calculation.cacheChanger(L1D,setIndexL1,index,trace.getData(),startIndex,(startIndex+trace.getForwardByte()*2));
+        }
+        if (L2hit) {
+            System.out.print("L2, ");
+            int index = calculation.cacheIndexSearch(L2, setIndexL2, tagL2);
+            int startIndex = Integer.parseInt(trace.getAddress(), 16) %  (int) Math.pow(2, Main.L2B);
+            calculation.cacheChanger(L2,setIndexL2,index,trace.getData(),startIndex,(startIndex+trace.getForwardByte()*2));
+        }
+        calculation.memoryChanger(trace.getData(), Integer.parseInt(trace.getAddress(), 16), trace.getForwardByte());
+        System.out.println("RAM");
     }
 }
