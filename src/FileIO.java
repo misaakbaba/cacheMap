@@ -1,9 +1,10 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Read {
+public class FileIO {
     ArrayList<Traces> readTrace(String path) throws FileNotFoundException {
         String temp = "";
         ArrayList<Traces> list = new ArrayList<>();
@@ -40,5 +41,27 @@ public class Read {
             default:
                 return null;
         }
+    }
+
+    void writeRam(ArrayList<String> ram, String path) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(path);
+        for (int i = 0; i < ram.size(); i++) {
+            writer.print(ram.get(i));
+            writer.print(" ");
+        }
+        writer.close();
+    }
+
+    void writeCaches(Cache cache, String path) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(path);
+        writer.println("tag       time        v    data");
+        for (int i = 0; i < cache.getCache().size(); i++) {
+            for (int j = 0; j < cache.getCache().get(i).getLines().size(); j++) {
+                writer.println(cache.getCache().get(i).getLines().get(j).getTag() + "      " + cache.getCache().get(i).getLines().get(j).getTimeBit() + "       " +
+                        cache.getCache().get(i).getLines().get(j).getValidBit() + "      " + cache.getCache().get(i).getLines().get(j).getData());
+            }
+            writer.println();
+        }
+        writer.close();
     }
 }

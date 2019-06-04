@@ -1,34 +1,25 @@
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-/*
- *parametreler ayarlanacak
- * hit miss eviction ayarlanacak
- * ram file io
- * testler
- * trace dosyasını yazdırmayı bırak
- * size 0 olanları yapma
- * debug
- */
 public class Main {
-    static int L1S = 0, L1E = 2, L1B = 3;
-    static int L2S = 1, L2E = 2, L2B = 3;
+    static int L1S, L1E, L1B;
+    static int L2S, L2E, L2B;
     static ArrayList<String> ram;
     static int time = 1;
     static int L1IhitCt, L1IMissCt, L1IEviction;
     static int L1DhitCt, L1DMissCt, L1DEviction;
     static int L2hitCt, L2MissCt, L2Eviction;
-
+    static String tracePath = "";
 
     public static void main(String[] args) throws FileNotFoundException {
-        Cache L1I = cacheCreater(L1S, L1E, L1B);
-        Cache L1D = cacheCreater(L1S, L1E, L1B);
-        Cache L2 = cacheCreater(L2S, L2E, L2B);
+        argSet(args);
+        Cache L1I = cacheCreater((int) Math.pow(2, L1S), L1E, L1B);
+        Cache L1D = cacheCreater((int) Math.pow(2, L1S), L1E, L1B);
+        Cache L2 = cacheCreater((int) Math.pow(2, L2S), L2E, L2B);
 
-        Read read = new Read();
-        String tracePath = "traces/test_small.trace";
-        ram = read.readRam("ram.txt");
-        ArrayList<Traces> traces = read.readTrace(tracePath);
+        FileIO fileIO = new FileIO();
+        ram = fileIO.readRam("ram.txt");
+        ArrayList<Traces> traces = fileIO.readTrace(tracePath);
         Operations operations = new Operations();
         for (int i = 0; i < traces.size(); i++) {
             switch (traces.get(i).getOperation()) {
@@ -56,6 +47,13 @@ public class Main {
                 " L1D-evictions:" + Main.L1DEviction);
         System.out.println("L2-hits:" + Main.L2hitCt + " L2-misses:" + Main.L2MissCt +
                 " L2-evictions:" + Main.L2Eviction);
+
+//        System.out.println(Integer.parseInt("00000000",16));
+        fileIO.writeRam(ram, "newRam.txt");
+        fileIO.writeCaches(L1D,"L1D.txt");
+        fileIO.writeCaches(L1I,"L1I.txt");
+        fileIO.writeCaches(L2,"L2.txt");
+
     }
 
     static Cache cacheCreater(int set, int line, int block) {
@@ -63,9 +61,54 @@ public class Main {
         for (int i = 0; i < set; i++) {
             cache.addList(new Set());
         }
-        if (set == 0) {
+        if (set == 1) {
             cache.addList(new Set());
         }
         return cache;
+    }
+
+    static void argSet(String[] args) {
+        int pass = 0;
+        try {
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-L1s":
+                        Main.L1S = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-L1E":
+                        Main.L1E = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-L1b":
+                        Main.L1B = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-L2s":
+                        Main.L2S = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-L2E":
+                        Main.L2E = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-L2b":
+                        Main.L2B = Integer.parseInt(args[i + 1]);
+                        pass++;
+                        break;
+                    case "-t":
+                        Main.tracePath = args[i + 1];
+                        pass++;
+                        break;
+                }
+            }
+            if (pass != 7) {
+                System.out.println("Missing Argument, re-run Code");
+                System.exit(1);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("invalid arguman attempt, please re-run code");
+            System.exit(1);
+        }
     }
 }
